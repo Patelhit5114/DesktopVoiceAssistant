@@ -1,0 +1,42 @@
+{
+    "apps": {
+        "chrome": {
+            "paths": [
+                "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+                "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
+            ],
+            "aliases": [
+                "google chrome",
+                "web browser",
+                "browser"
+            ]
+        },
+        "notepad": {
+            "paths": [
+                "notepad.exe"
+            ],
+            "aliases": [
+                "text editor",
+                "editor"
+            ]
+        },
+        "calculator": {
+            "paths": [
+                "calc.exe"
+            ],
+            "aliases": [
+                "calc",
+                "math"
+            ]
+        },
+        "spotify": {
+            "paths": [
+                "C:\\Users\\%USERNAME%\\AppData\\Roaming\\Spotify\\Spotify.exe"
+            ],
+            "aliases": [
+                "music player",
+                "music"
+            ]
+        }
+    }
+}

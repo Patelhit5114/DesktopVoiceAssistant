@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JARVIS - Virtual Assistant</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/avatar.png') }}" type="image/x-icon">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <section class="main">
+        <div class="image-container">
+            <div class="image">
+                <img src="{{ url_for('static', filename='images/skyyy.gif') }}" alt="image">
+            </div>
+            <h1>HearMe Headlines</h1>
+            <p>I'm a Virtual Assistant, How may I help you?</p>
+        </div>
+        <div class="input">
+            <button class="talk"><i class="fas fa-microphone-alt"></i></button>
+            <h1 class="content">Click here to speak</h1>
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const talkButton = document.querySelector('.talk');
+            const contentElement = document.querySelector('.content');
+            const imageElement = document.querySelector('.image img');
+            let isListening = false;
+            
+            function resetUI() {
+                isListening = false;
+                imageElement.classList.remove('active');
+                contentElement.textContent = "Click here to speak";
+                talkButton.disabled = false;
+            }
+            
+            function startListening() {
+                if (isListening) return;
+                
+                isListening = true;
+                contentElement.textContent = "Listening...";
+                imageElement.classList.add('active');
+                talkButton.disabled = true;
+                
+                fetch('/start_listening', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        pollStatus();
+                    } else {
+                        contentElement.textContent = data.message || "Error starting voice recognition";
+                        resetUI();
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    contentElement.textContent = "Error connecting to server";
+                    resetUI();
+                });
+            }
+            
+            function pollStatus() {
+                if (!isListening) return;
+                
+                fetch('/check_status')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            if (!data.busy) {
+                                contentElement.textContent = data.last_response;
+                                
+                                if (data.ready) {
+                                    setTimeout(() => {
+                                        resetUI();
+                                    }, 3000);
+                                } else {
+                                    resetUI();
+                                }
+                            } else {
+                                setTimeout(pollStatus, 500);
+                            }
+                        } else {
+                            contentElement.textContent = "Error checking status";
+                            resetUI();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error polling status:', error);
+                        contentElement.textContent = "Lost connection to server";
+                        resetUI();
+                    });
+            }
+            
+            talkButton.addEventListener('click', startListening);
+            contentElement.addEventListener('click', startListening);
+            
+            fetch('/check_status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success' && data.last_response) {
+                        contentElement.textContent = data.busy ? 
+                            "Assistant is busy..." : 
+                            (data.last_response !== "Click here to speak" ? data.last_response : "Click here to speak");
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking initial status:', error);
+                });
+        });
+    </script>
+</body>
+</html>
